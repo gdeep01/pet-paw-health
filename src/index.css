@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -7,111 +9,111 @@
 @layer base {
   :root {
     /* Clean Medical Aesthetic - Professional Healthcare Design */
-    --background: 0 0% 98%;
-    --foreground: 210 25% 15%;
+    --background: 210 20% 98%;
+    --foreground: 215 25% 15%;
 
     --card: 0 0% 100%;
-    --card-foreground: 210 25% 15%;
+    --card-foreground: 215 25% 15%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 210 25% 15%;
+    --popover-foreground: 215 25% 15%;
 
     /* Medical Blue - Professional and Trustworthy */
-    --primary: 210 85% 48%;
+    --primary: 215 90% 50%;
     --primary-foreground: 0 0% 100%;
-    --primary-light: 210 85% 60%;
-    --primary-dark: 210 85% 35%;
+    --primary-light: 215 85% 60%;
+    --primary-dark: 215 90% 40%;
 
     /* Clean Secondary Surfaces */
-    --secondary: 210 20% 96%;
-    --secondary-foreground: 210 25% 15%;
+    --secondary: 215 25% 95%;
+    --secondary-foreground: 215 25% 15%;
 
     /* Subtle Muted Elements */
-    --muted: 210 15% 94%;
-    --muted-foreground: 210 15% 45%;
+    --muted: 215 20% 93%;
+    --muted-foreground: 215 15% 45%;
 
-    /* Accent - Fresh Medical Mint */
-    --accent: 160 50% 45%;
+    /* Accent - Fresh Medical Teal */
+    --accent: 170 65% 40%;
     --accent-foreground: 0 0% 100%;
 
     /* Alert States */
-    --destructive: 0 75% 55%;
+    --destructive: 0 80% 55%;
     --destructive-foreground: 0 0% 100%;
-    --success: 145 65% 45%;
+    --success: 150 70% 40%;
     --success-foreground: 0 0% 100%;
-    --warning: 40 95% 55%;
+    --warning: 38 95% 50%;
     --warning-foreground: 0 0% 100%;
 
     /* Borders and Inputs */
-    --border: 210 20% 88%;
-    --input: 210 20% 88%;
-    --ring: 210 85% 48%;
+    --border: 215 20% 88%;
+    --input: 215 20% 88%;
+    --ring: 215 90% 50%;
 
     --radius: 0.75rem;
 
     /* Medical Risk Levels */
-    --risk-low: 145 65% 45%;
-    --risk-medium: 40 95% 55%;
-    --risk-high: 0 75% 55%;
+    --risk-low: 150 70% 40%;
+    --risk-medium: 38 95% 50%;
+    --risk-high: 0 80% 55%;
 
     /* Shadows for Depth */
-    --shadow-sm: 0 1px 2px 0 hsl(210 25% 15% / 0.05);
-    --shadow-md: 0 4px 6px -1px hsl(210 25% 15% / 0.08);
-    --shadow-lg: 0 10px 15px -3px hsl(210 25% 15% / 0.1);
+    --shadow-sm: 0 1px 2px 0 hsl(215 25% 15% / 0.04);
+    --shadow-md: 0 4px 6px -1px hsl(215 25% 15% / 0.06), 0 2px 4px -2px hsl(215 25% 15% / 0.06);
+    --shadow-lg: 0 10px 15px -3px hsl(215 25% 15% / 0.08), 0 4px 6px -4px hsl(215 25% 15% / 0.08);
 
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 210 25% 15%;
-    --sidebar-primary: 210 85% 48%;
+    --sidebar-background: 210 20% 98%;
+    --sidebar-foreground: 215 25% 15%;
+    --sidebar-primary: 215 90% 50%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 210 20% 96%;
-    --sidebar-accent-foreground: 210 25% 15%;
-    --sidebar-border: 210 20% 88%;
-    --sidebar-ring: 210 85% 48%;
+    --sidebar-accent: 215 25% 95%;
+    --sidebar-accent-foreground: 215 25% 15%;
+    --sidebar-border: 215 20% 88%;
+    --sidebar-ring: 215 90% 50%;
   }
 
   .dark {
-    --background: 210 30% 8%;
-    --foreground: 210 10% 95%;
+    --background: 215 30% 8%;
+    --foreground: 210 15% 95%;
 
-    --card: 210 25% 12%;
-    --card-foreground: 210 10% 95%;
+    --card: 215 28% 12%;
+    --card-foreground: 210 15% 95%;
 
-    --popover: 210 25% 12%;
-    --popover-foreground: 210 10% 95%;
+    --popover: 215 28% 12%;
+    --popover-foreground: 210 15% 95%;
 
-    --primary: 210 85% 55%;
+    --primary: 215 85% 55%;
     --primary-foreground: 0 0% 100%;
-    --primary-light: 210 85% 65%;
-    --primary-dark: 210 85% 40%;
+    --primary-light: 215 80% 65%;
+    --primary-dark: 215 85% 45%;
 
-    --secondary: 210 20% 15%;
-    --secondary-foreground: 210 10% 95%;
+    --secondary: 215 25% 16%;
+    --secondary-foreground: 210 15% 95%;
 
-    --muted: 210 20% 18%;
-    --muted-foreground: 210 10% 65%;
+    --muted: 215 25% 18%;
+    --muted-foreground: 210 15% 60%;
 
-    --accent: 160 50% 45%;
+    --accent: 170 60% 45%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 75% 55%;
     --destructive-foreground: 0 0% 100%;
-    --success: 145 65% 45%;
+    --success: 150 65% 45%;
     --success-foreground: 0 0% 100%;
-    --warning: 40 95% 55%;
+    --warning: 38 90% 50%;
     --warning-foreground: 0 0% 100%;
 
-    --border: 210 20% 22%;
-    --input: 210 20% 22%;
-    --ring: 210 85% 55%;
+    --border: 215 25% 22%;
+    --input: 215 25% 22%;
+    --ring: 215 85% 55%;
 
-    --sidebar-background: 210 30% 10%;
-    --sidebar-foreground: 210 10% 90%;
-    --sidebar-primary: 210 85% 55%;
+    --sidebar-background: 215 30% 10%;
+    --sidebar-foreground: 210 15% 90%;
+    --sidebar-primary: 215 85% 55%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 210 20% 15%;
-    --sidebar-accent-foreground: 210 10% 90%;
-    --sidebar-border: 210 20% 22%;
-    --sidebar-ring: 210 85% 55%;
+    --sidebar-accent: 215 25% 16%;
+    --sidebar-accent-foreground: 210 15% 90%;
+    --sidebar-border: 215 25% 22%;
+    --sidebar-ring: 215 85% 55%;
   }
 }
 
@@ -121,11 +123,40 @@
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground antialiased;
+    font-family: 'Inter', system-ui, sans-serif;
     font-feature-settings: "rlig" 1, "calt" 1;
   }
 
   h1, h2, h3, h4, h5, h6 {
-    @apply font-semibold;
+    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+    @apply font-semibold tracking-tight;
+  }
+}
+
+@layer components {
+  .glass-card {
+    @apply bg-card/80 backdrop-blur-md border border-border/50;
+  }
+  
+  .gradient-text {
+    @apply bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent;
+  }
+}
+
+@layer utilities {
+  .animate-fade-in {
+    animation: fadeIn 0.5s ease-out forwards;
+  }
+  
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 }
