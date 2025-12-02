@@ -9,8 +9,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, Upload } from 'lucide-react';
+import { Upload, Camera, Loader2, Dog, Cat } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
+import PageContainer from '@/components/layout/PageContainer';
 
 const AddPet = () => {
   const { user } = useAuth();
@@ -19,6 +20,7 @@ const AddPet = () => {
   const [loading, setLoading] = useState(false);
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const [step, setStep] = useState(1);
 
   const [formData, setFormData] = useState({
     pet_name: '',
@@ -62,7 +64,6 @@ const AddPet = () => {
     try {
       let photoUrl = null;
 
-      // Upload photo if provided
       if (photoFile) {
         const fileExt = photoFile.name.split('.').pop();
         const fileName = `${user.id}/${Date.now()}.${fileExt}`;
@@ -80,7 +81,6 @@ const AddPet = () => {
         photoUrl = publicUrl;
       }
 
-      // Insert pet data
       const { error } = await supabase.from('pets').insert({
         user_id: user.id,
         ...formData,
@@ -92,8 +92,8 @@ const AddPet = () => {
       if (error) throw error;
 
       toast({
-        title: 'Pet Added!',
-        description: `${formData.pet_name} has been added successfully.`,
+        title: 'Pet Added Successfully! 🎉',
+        description: `${formData.pet_name}'s health profile has been created.`,
       });
 
       navigate('/dashboard');
@@ -108,143 +108,195 @@ const AddPet = () => {
     }
   };
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-primary/5 via-accent/5 to-background">
-      <header className="border-b bg-card/80 backdrop-blur-sm sticky top-0 z-10">
-        <div className="container mx-auto px-4 py-4">
-          <Button variant="ghost" onClick={() => navigate('/dashboard')} className="mb-2">
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Dashboard
-          </Button>
-          <h1 className="text-2xl font-bold">Add New Pet</h1>
-        </div>
-      </header>
+  const canProceed = () => {
+    if (step === 1) {
+      return formData.pet_name && formData.species && formData.date_of_birth;
+    }
+    return true;
+  };
 
-      <main className="container mx-auto px-4 py-8 max-w-3xl">
-        <form onSubmit={handleSubmit}>
-          <Card>
-            <CardHeader>
-              <CardTitle>Pet Information</CardTitle>
-              <CardDescription>Enter your pet's details to create their health profile</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              {/* Photo Upload */}
-              <div className="space-y-2">
-                <Label>Pet Photo</Label>
-                <div className="flex items-center gap-4">
-                  {photoPreview && (
-                    <div className="w-24 h-24 rounded-full overflow-hidden border-2 border-primary/20">
+  return (
+    <PageContainer className="max-w-3xl">
+      {/* Progress Steps */}
+      <div className="mb-8">
+        <div className="flex items-center justify-between mb-4">
+          {['Basic Info', 'Health Details', 'Contacts'].map((label, idx) => (
+            <div key={idx} className="flex items-center">
+              <div 
+                className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold transition-colors ${
+                  step > idx + 1 
+                    ? 'bg-primary text-primary-foreground' 
+                    : step === idx + 1 
+                      ? 'bg-primary text-primary-foreground' 
+                      : 'bg-muted text-muted-foreground'
+                }`}
+              >
+                {idx + 1}
+              </div>
+              <span className={`ml-2 text-sm hidden sm:inline ${step === idx + 1 ? 'font-medium' : 'text-muted-foreground'}`}>
+                {label}
+              </span>
+              {idx < 2 && <div className={`w-12 sm:w-24 h-0.5 mx-2 ${step > idx + 1 ? 'bg-primary' : 'bg-muted'}`} />}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <form onSubmit={handleSubmit}>
+        <Card className="border-border/50">
+          <CardHeader>
+            <CardTitle className="text-2xl">
+              {step === 1 && 'Basic Information'}
+              {step === 2 && 'Health Details'}
+              {step === 3 && 'Emergency Contacts'}
+            </CardTitle>
+            <CardDescription>
+              {step === 1 && "Enter your pet's basic details"}
+              {step === 2 && "Add health-related information"}
+              {step === 3 && "Add emergency and vet contacts"}
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {/* Step 1: Basic Info */}
+            {step === 1 && (
+              <>
+                {/* Photo Upload */}
+                <div className="flex flex-col items-center">
+                  <div 
+                    className={`w-32 h-32 rounded-2xl overflow-hidden border-2 border-dashed transition-colors ${
+                      photoPreview ? 'border-primary' : 'border-border hover:border-primary/50'
+                    } flex items-center justify-center bg-muted cursor-pointer group`}
+                    onClick={() => document.getElementById('photo-input')?.click()}
+                  >
+                    {photoPreview ? (
                       <img src={photoPreview} alt="Preview" className="w-full h-full object-cover" />
-                    </div>
-                  )}
-                  <div>
-                    <Input
-                      id="photo"
-                      type="file"
-                      accept="image/*"
-                      onChange={handlePhotoChange}
-                      className="hidden"
-                    />
-                    <Label htmlFor="photo" className="cursor-pointer">
-                      <div className="flex items-center gap-2 px-4 py-2 border rounded-md hover:bg-secondary transition-colors">
-                        <Upload className="w-4 h-4" />
-                        <span>Upload Photo</span>
+                    ) : (
+                      <div className="text-center p-4">
+                        <Camera className="w-8 h-8 text-muted-foreground mx-auto mb-2 group-hover:text-primary transition-colors" />
+                        <span className="text-xs text-muted-foreground">Add Photo</span>
                       </div>
-                    </Label>
+                    )}
+                  </div>
+                  <Input
+                    id="photo-input"
+                    type="file"
+                    accept="image/*"
+                    onChange={handlePhotoChange}
+                    className="hidden"
+                  />
+                </div>
+
+                {/* Species Selection */}
+                <div className="space-y-3">
+                  <Label className="text-sm font-medium">Species *</Label>
+                  <div className="grid grid-cols-2 gap-4">
+                    {[
+                      { value: 'Dog', icon: Dog, emoji: '🐕' },
+                      { value: 'Cat', icon: Cat, emoji: '🐱' },
+                    ].map((option) => (
+                      <button
+                        key={option.value}
+                        type="button"
+                        onClick={() => setFormData({ ...formData, species: option.value })}
+                        className={`p-4 rounded-xl border-2 transition-all ${
+                          formData.species === option.value 
+                            ? 'border-primary bg-primary/5' 
+                            : 'border-border hover:border-primary/30'
+                        }`}
+                      >
+                        <div className="text-3xl mb-2">{option.emoji}</div>
+                        <span className="font-medium">{option.value}</span>
+                      </button>
+                    ))}
                   </div>
                 </div>
-              </div>
 
-              {/* Basic Info */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="pet_name">Pet Name *</Label>
-                  <Input
-                    id="pet_name"
-                    required
-                    value={formData.pet_name}
-                    onChange={(e) => setFormData({ ...formData, pet_name: e.target.value })}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="pet_name">Pet Name *</Label>
+                    <Input
+                      id="pet_name"
+                      required
+                      placeholder="e.g., Buddy"
+                      value={formData.pet_name}
+                      onChange={(e) => setFormData({ ...formData, pet_name: e.target.value })}
+                      className="h-11"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="breed">Breed</Label>
+                    <Input
+                      id="breed"
+                      placeholder="e.g., Golden Retriever"
+                      value={formData.breed}
+                      onChange={(e) => setFormData({ ...formData, breed: e.target.value })}
+                      className="h-11"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="date_of_birth">Date of Birth *</Label>
+                    <Input
+                      id="date_of_birth"
+                      type="date"
+                      required
+                      value={formData.date_of_birth}
+                      onChange={(e) => setFormData({ ...formData, date_of_birth: e.target.value })}
+                      className="h-11"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="weight_kg">Weight (kg)</Label>
+                    <Input
+                      id="weight_kg"
+                      type="number"
+                      step="0.1"
+                      placeholder="e.g., 12.5"
+                      value={formData.weight_kg}
+                      onChange={(e) => setFormData({ ...formData, weight_kg: e.target.value })}
+                      className="h-11"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between p-4 rounded-xl bg-muted/50">
+                  <div>
+                    <Label htmlFor="is_indoor" className="font-medium">Indoor Pet</Label>
+                    <p className="text-sm text-muted-foreground">Does your pet stay mostly indoors?</p>
+                  </div>
+                  <Switch
+                    id="is_indoor"
+                    checked={formData.is_indoor}
+                    onCheckedChange={(checked) => setFormData({ ...formData, is_indoor: checked })}
                   />
                 </div>
+              </>
+            )}
 
-                <div className="space-y-2">
-                  <Label htmlFor="species">Species *</Label>
-                  <Select
-                    required
-                    value={formData.species}
-                    onValueChange={(value) => setFormData({ ...formData, species: value })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select species" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Dog">Dog</SelectItem>
-                      <SelectItem value="Cat">Cat</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="breed">Breed</Label>
-                  <Input
-                    id="breed"
-                    value={formData.breed}
-                    onChange={(e) => setFormData({ ...formData, breed: e.target.value })}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="date_of_birth">Date of Birth *</Label>
-                  <Input
-                    id="date_of_birth"
-                    type="date"
-                    required
-                    value={formData.date_of_birth}
-                    onChange={(e) => setFormData({ ...formData, date_of_birth: e.target.value })}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="weight_kg">Weight (kg)</Label>
-                  <Input
-                    id="weight_kg"
-                    type="number"
-                    step="0.01"
-                    value={formData.weight_kg}
-                    onChange={(e) => setFormData({ ...formData, weight_kg: e.target.value })}
-                  />
-                </div>
-
+            {/* Step 2: Health Details */}
+            {step === 2 && (
+              <>
                 <div className="space-y-2">
                   <Label htmlFor="blood_group">Blood Group</Label>
                   <Input
                     id="blood_group"
+                    placeholder="e.g., DEA 1.1+"
                     value={formData.blood_group}
                     onChange={(e) => setFormData({ ...formData, blood_group: e.target.value })}
+                    className="h-11"
                   />
                 </div>
-              </div>
 
-              <div className="flex items-center space-x-2">
-                <Switch
-                  id="is_indoor"
-                  checked={formData.is_indoor}
-                  onCheckedChange={(checked) => setFormData({ ...formData, is_indoor: checked })}
-                />
-                <Label htmlFor="is_indoor">Indoor Pet</Label>
-              </div>
-
-              {/* Health Info */}
-              <div className="space-y-4">
-                <h3 className="font-semibold text-lg">Health Information</h3>
-                
                 <div className="space-y-2">
                   <Label htmlFor="known_allergies">Known Allergies</Label>
                   <Textarea
                     id="known_allergies"
                     value={formData.known_allergies}
                     onChange={(e) => setFormData({ ...formData, known_allergies: e.target.value })}
-                    placeholder="List any known allergies..."
+                    placeholder="List any known allergies (e.g., chicken, pollen)..."
+                    className="min-h-24"
                   />
                 </div>
 
@@ -254,86 +306,124 @@ const AddPet = () => {
                     id="chronic_conditions"
                     value={formData.chronic_conditions}
                     onChange={(e) => setFormData({ ...formData, chronic_conditions: e.target.value })}
-                    placeholder="List any chronic conditions..."
+                    placeholder="List any chronic conditions (e.g., diabetes, arthritis)..."
+                    className="min-h-24"
                   />
                 </div>
-              </div>
+              </>
+            )}
 
-              {/* Emergency Contact */}
-              <div className="space-y-4">
-                <h3 className="font-semibold text-lg">Emergency Contact</h3>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="emergency_contact_name">Contact Name</Label>
-                    <Input
-                      id="emergency_contact_name"
-                      value={formData.emergency_contact_name}
-                      onChange={(e) => setFormData({ ...formData, emergency_contact_name: e.target.value })}
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="emergency_contact_phone">Contact Phone</Label>
-                    <Input
-                      id="emergency_contact_phone"
-                      type="tel"
-                      value={formData.emergency_contact_phone}
-                      onChange={(e) => setFormData({ ...formData, emergency_contact_phone: e.target.value })}
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Vet Info */}
-              <div className="space-y-4">
-                <h3 className="font-semibold text-lg">Veterinarian Information</h3>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="vet_name">Vet Name</Label>
-                    <Input
-                      id="vet_name"
-                      value={formData.vet_name}
-                      onChange={(e) => setFormData({ ...formData, vet_name: e.target.value })}
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="vet_phone">Vet Phone</Label>
-                    <Input
-                      id="vet_phone"
-                      type="tel"
-                      value={formData.vet_phone}
-                      onChange={(e) => setFormData({ ...formData, vet_phone: e.target.value })}
-                    />
-                  </div>
-
-                  <div className="space-y-2 md:col-span-2">
-                    <Label htmlFor="vet_email">Vet Email</Label>
-                    <Input
-                      id="vet_email"
-                      type="email"
-                      value={formData.vet_email}
-                      onChange={(e) => setFormData({ ...formData, vet_email: e.target.value })}
-                    />
+            {/* Step 3: Contacts */}
+            {step === 3 && (
+              <>
+                <div className="space-y-4">
+                  <h3 className="font-semibold text-lg flex items-center gap-2">
+                    <span className="w-8 h-8 rounded-full bg-destructive/10 text-destructive flex items-center justify-center text-sm">!</span>
+                    Emergency Contact
+                  </h3>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="emergency_contact_name">Contact Name</Label>
+                      <Input
+                        id="emergency_contact_name"
+                        placeholder="e.g., Jane Doe"
+                        value={formData.emergency_contact_name}
+                        onChange={(e) => setFormData({ ...formData, emergency_contact_name: e.target.value })}
+                        className="h-11"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="emergency_contact_phone">Contact Phone</Label>
+                      <Input
+                        id="emergency_contact_phone"
+                        type="tel"
+                        placeholder="e.g., +1 234 567 8900"
+                        value={formData.emergency_contact_phone}
+                        onChange={(e) => setFormData({ ...formData, emergency_contact_phone: e.target.value })}
+                        className="h-11"
+                      />
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              <div className="flex gap-3 pt-4">
-                <Button type="button" variant="outline" onClick={() => navigate('/dashboard')} className="flex-1">
-                  Cancel
+                <div className="space-y-4 pt-4 border-t">
+                  <h3 className="font-semibold text-lg flex items-center gap-2">
+                    <span className="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center text-sm">+</span>
+                    Veterinarian
+                  </h3>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="vet_name">Vet Name / Clinic</Label>
+                      <Input
+                        id="vet_name"
+                        placeholder="e.g., Dr. Smith / Pet Care Clinic"
+                        value={formData.vet_name}
+                        onChange={(e) => setFormData({ ...formData, vet_name: e.target.value })}
+                        className="h-11"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="vet_phone">Vet Phone</Label>
+                      <Input
+                        id="vet_phone"
+                        type="tel"
+                        placeholder="e.g., +1 234 567 8900"
+                        value={formData.vet_phone}
+                        onChange={(e) => setFormData({ ...formData, vet_phone: e.target.value })}
+                        className="h-11"
+                      />
+                    </div>
+                    <div className="space-y-2 md:col-span-2">
+                      <Label htmlFor="vet_email">Vet Email</Label>
+                      <Input
+                        id="vet_email"
+                        type="email"
+                        placeholder="e.g., clinic@example.com"
+                        value={formData.vet_email}
+                        onChange={(e) => setFormData({ ...formData, vet_email: e.target.value })}
+                        className="h-11"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
+
+            {/* Navigation Buttons */}
+            <div className="flex gap-3 pt-4">
+              {step > 1 && (
+                <Button type="button" variant="outline" onClick={() => setStep(step - 1)} className="flex-1">
+                  Back
                 </Button>
+              )}
+              {step < 3 ? (
+                <Button 
+                  type="button" 
+                  onClick={() => setStep(step + 1)} 
+                  disabled={!canProceed()}
+                  className="flex-1"
+                >
+                  Continue
+                </Button>
+              ) : (
                 <Button type="submit" disabled={loading} className="flex-1">
-                  {loading ? 'Adding Pet...' : 'Add Pet'}
+                  {loading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Creating Profile...
+                    </>
+                  ) : (
+                    'Create Pet Profile'
+                  )}
                 </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </form>
-      </main>
-    </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      </form>
+    </PageContainer>
   );
 };
 

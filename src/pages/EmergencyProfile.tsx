@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { AlertCircle, Heart, Phone, Syringe } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { AlertCircle, Heart, Phone, Syringe, Calendar, Droplet, AlertTriangle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { format, differenceInYears, differenceInMonths } from 'date-fns';
+import LoadingSpinner from '@/components/ui/loading-spinner';
 
 interface Pet {
   id: string;
@@ -29,7 +31,9 @@ const EmergencyProfile = () => {
   const [error, setError] = useState(false);
 
   useEffect(() => {
-    fetchPet();
+    if (petId) {
+      fetchPet();
+    }
   }, [petId]);
 
   const fetchPet = async () => {
@@ -54,32 +58,38 @@ const EmergencyProfile = () => {
   const calculateAge = (dob: string) => {
     const birthDate = new Date(dob);
     const today = new Date();
-    const years = today.getFullYear() - birthDate.getFullYear();
+    const years = differenceInYears(today, birthDate);
+    const months = differenceInMonths(today, birthDate) % 12;
     
     if (years === 0) {
-      const months = today.getMonth() - birthDate.getMonth();
       return `${months} month${months !== 1 ? 's' : ''} old`;
     }
-    return `${years} year${years !== 1 ? 's' : ''} old`;
+    return months > 0 ? `${years}y ${months}m old` : `${years} years old`;
+  };
+
+  const getSpeciesEmoji = (species: string) => {
+    return species.toLowerCase() === 'dog' ? '🐕' : '🐱';
   };
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-primary/5 via-accent/5 to-background">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-destructive/5 via-background to-destructive/5">
+        <LoadingSpinner size="lg" />
       </div>
     );
   }
 
   if (error || !pet) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-primary/5 via-accent/5 to-background p-4">
-        <Card className="max-w-md">
-          <CardContent className="pt-6 text-center">
-            <AlertCircle className="w-12 h-12 text-destructive mx-auto mb-4" />
-            <h2 className="text-xl font-semibold mb-2">Pet Not Found</h2>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-destructive/5 via-background to-destructive/5 p-4">
+        <Card className="max-w-md w-full">
+          <CardContent className="pt-8 pb-8 text-center">
+            <div className="w-16 h-16 rounded-full bg-destructive/10 flex items-center justify-center mx-auto mb-4">
+              <AlertCircle className="w-8 h-8 text-destructive" />
+            </div>
+            <h2 className="text-2xl font-bold mb-2">Pet Not Found</h2>
             <p className="text-muted-foreground">
-              This emergency profile could not be found. Please verify the QR code.
+              This emergency profile could not be found. The QR code may be invalid or expired.
             </p>
           </CardContent>
         </Card>
@@ -88,127 +98,159 @@ const EmergencyProfile = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-destructive/10 via-warning/10 to-background">
-      <div className="bg-destructive text-destructive-foreground py-3">
-        <div className="container mx-auto px-4">
-          <p className="text-center font-semibold flex items-center justify-center gap-2">
-            <AlertCircle className="w-5 h-5" />
-            EMERGENCY PET PROFILE
-          </p>
+    <div className="min-h-screen bg-gradient-to-br from-destructive/10 via-background to-destructive/5">
+      {/* Emergency Header */}
+      <div className="bg-destructive text-destructive-foreground py-4 px-4 shadow-lg">
+        <div className="container mx-auto max-w-2xl">
+          <div className="flex items-center justify-center gap-3">
+            <AlertTriangle className="w-6 h-6 animate-pulse" />
+            <h1 className="text-xl font-bold tracking-wide">EMERGENCY PET PROFILE</h1>
+            <AlertTriangle className="w-6 h-6 animate-pulse" />
+          </div>
         </div>
       </div>
 
       <main className="container mx-auto px-4 py-8 max-w-2xl">
-        <Card className="border-destructive/20 shadow-lg">
-          <CardHeader className="bg-gradient-to-r from-primary/5 to-accent/5">
-            <div className="flex items-start gap-4">
+        {/* Pet Header */}
+        <Card className="mb-6 overflow-hidden border-2 border-destructive/20 shadow-xl">
+          <div className="bg-gradient-to-r from-primary/10 via-accent/10 to-primary/10 p-6">
+            <div className="flex items-center gap-4">
               {pet.pet_photo_url ? (
-                <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-primary/30">
-                  <img 
-                    src={pet.pet_photo_url} 
-                    alt={pet.pet_name}
-                    className="w-full h-full object-cover"
-                  />
+                <div className="w-24 h-24 rounded-2xl overflow-hidden border-4 border-card shadow-lg flex-shrink-0">
+                  <img src={pet.pet_photo_url} alt={pet.pet_name} className="w-full h-full object-cover" />
                 </div>
               ) : (
-                <div className="w-24 h-24 rounded-full bg-primary/10 border-4 border-primary/30 flex items-center justify-center">
-                  <Heart className="w-10 h-10 text-primary" />
+                <div className="w-24 h-24 rounded-2xl bg-card border-4 border-muted flex items-center justify-center text-5xl shadow-lg">
+                  {getSpeciesEmoji(pet.species)}
                 </div>
               )}
               <div className="flex-1">
-                <CardTitle className="text-3xl">{pet.pet_name}</CardTitle>
-                <CardDescription className="text-lg mt-1">
-                  {pet.breed || pet.species} • {calculateAge(pet.date_of_birth)}
-                </CardDescription>
-                <div className="mt-2">
-                  <Badge variant="outline" className="font-mono text-xs">
-                    ID: {pet.unique_pet_id}
+                <h2 className="text-3xl font-bold mb-1">{pet.pet_name}</h2>
+                <p className="text-muted-foreground text-lg">{pet.breed || pet.species}</p>
+                <div className="flex flex-wrap gap-2 mt-2">
+                  <Badge variant="secondary" className="text-sm">
+                    <Calendar className="w-3 h-3 mr-1" />
+                    {calculateAge(pet.date_of_birth)}
                   </Badge>
+                  {pet.blood_group && (
+                    <Badge variant="outline" className="text-sm bg-card">
+                      <Droplet className="w-3 h-3 mr-1" />
+                      {pet.blood_group}
+                    </Badge>
+                  )}
                 </div>
               </div>
             </div>
-          </CardHeader>
-          <CardContent className="space-y-6 pt-6">
-            {/* Critical Information */}
-            <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4">
-              <h3 className="font-semibold text-lg mb-3 flex items-center gap-2">
-                <AlertCircle className="w-5 h-5 text-destructive" />
-                Critical Information
-              </h3>
-              <div className="space-y-2 text-sm">
-                {pet.blood_group && (
-                  <p><span className="font-semibold">Blood Group:</span> {pet.blood_group}</p>
-                )}
-                {pet.known_allergies && (
-                  <div className="bg-warning/10 border border-warning/20 rounded p-2 mt-2">
-                    <p className="font-semibold text-warning-foreground">⚠️ Known Allergies:</p>
-                    <p className="mt-1">{pet.known_allergies}</p>
-                  </div>
-                )}
-                {pet.chronic_conditions && (
-                  <div className="bg-muted rounded p-2 mt-2">
-                    <p className="font-semibold">Chronic Conditions:</p>
-                    <p className="mt-1">{pet.chronic_conditions}</p>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Emergency Contact */}
-            {(pet.emergency_contact_name || pet.emergency_contact_phone) && (
-              <div className="bg-primary/5 border border-primary/20 rounded-lg p-4">
-                <h3 className="font-semibold text-lg mb-3 flex items-center gap-2">
-                  <Phone className="w-5 h-5 text-primary" />
-                  Emergency Contact
-                </h3>
-                <div className="space-y-1 text-sm">
-                  {pet.emergency_contact_name && (
-                    <p><span className="font-semibold">Name:</span> {pet.emergency_contact_name}</p>
-                  )}
-                  {pet.emergency_contact_phone && (
-                    <p>
-                      <span className="font-semibold">Phone:</span>{' '}
-                      <a href={`tel:${pet.emergency_contact_phone}`} className="text-primary hover:underline">
-                        {pet.emergency_contact_phone}
-                      </a>
-                    </p>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {/* Veterinarian */}
-            {(pet.vet_name || pet.vet_phone) && (
-              <div className="bg-accent/5 border border-accent/20 rounded-lg p-4">
-                <h3 className="font-semibold text-lg mb-3 flex items-center gap-2">
-                  <Syringe className="w-5 h-5 text-accent" />
-                  Veterinarian
-                </h3>
-                <div className="space-y-1 text-sm">
-                  {pet.vet_name && (
-                    <p><span className="font-semibold">Name:</span> {pet.vet_name}</p>
-                  )}
-                  {pet.vet_phone && (
-                    <p>
-                      <span className="font-semibold">Phone:</span>{' '}
-                      <a href={`tel:${pet.vet_phone}`} className="text-accent hover:underline">
-                        {pet.vet_phone}
-                      </a>
-                    </p>
-                  )}
-                </div>
-              </div>
-            )}
-          </CardContent>
+          </div>
         </Card>
 
-        <div className="mt-6 text-center">
-          <p className="text-sm text-muted-foreground">
-            This is an emergency profile for <strong>{pet.pet_name}</strong>
-          </p>
-          <p className="text-xs text-muted-foreground mt-1">
-            Powered by PetPaw Health Management System
-          </p>
+        {/* Critical Medical Info */}
+        {(pet.known_allergies || pet.chronic_conditions) && (
+          <Card className="mb-6 border-2 border-[hsl(var(--warning))]/50 bg-[hsl(var(--warning))]/5">
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center gap-2 text-[hsl(var(--warning))]">
+                <AlertTriangle className="w-5 h-5" />
+                CRITICAL MEDICAL INFORMATION
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {pet.known_allergies && (
+                <div className="p-4 rounded-lg bg-card border border-[hsl(var(--warning))]/30">
+                  <p className="font-bold text-[hsl(var(--warning))] mb-2 flex items-center gap-2">
+                    <AlertCircle className="w-4 h-4" />
+                    ALLERGIES
+                  </p>
+                  <p className="text-foreground">{pet.known_allergies}</p>
+                </div>
+              )}
+              
+              {pet.chronic_conditions && (
+                <div className="p-4 rounded-lg bg-card border">
+                  <p className="font-bold mb-2 flex items-center gap-2">
+                    <Syringe className="w-4 h-4" />
+                    CHRONIC CONDITIONS
+                  </p>
+                  <p className="text-foreground">{pet.chronic_conditions}</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Emergency Contact */}
+        {(pet.emergency_contact_name || pet.emergency_contact_phone) && (
+          <Card className="mb-6 border-2 border-primary/30">
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center gap-2 text-primary">
+                <Phone className="w-5 h-5" />
+                EMERGENCY CONTACT
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {pet.emergency_contact_name && (
+                  <p className="text-lg">
+                    <span className="text-muted-foreground">Name: </span>
+                    <strong>{pet.emergency_contact_name}</strong>
+                  </p>
+                )}
+                {pet.emergency_contact_phone && (
+                  <a 
+                    href={`tel:${pet.emergency_contact_phone}`} 
+                    className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-primary-foreground rounded-xl text-lg font-semibold hover:bg-primary/90 transition-colors shadow-lg"
+                  >
+                    <Phone className="w-5 h-5" />
+                    Call: {pet.emergency_contact_phone}
+                  </a>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Veterinarian */}
+        {(pet.vet_name || pet.vet_phone) && (
+          <Card className="mb-6 border border-border/50">
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center gap-2 text-accent">
+                <Syringe className="w-5 h-5" />
+                VETERINARIAN
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {pet.vet_name && (
+                  <p className="text-lg">
+                    <span className="text-muted-foreground">Clinic: </span>
+                    <strong>{pet.vet_name}</strong>
+                  </p>
+                )}
+                {pet.vet_phone && (
+                  <a 
+                    href={`tel:${pet.vet_phone}`} 
+                    className="inline-flex items-center gap-2 px-6 py-3 bg-accent text-accent-foreground rounded-xl text-lg font-semibold hover:bg-accent/90 transition-colors"
+                  >
+                    <Phone className="w-5 h-5" />
+                    Call Vet: {pet.vet_phone}
+                  </a>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Pet ID */}
+        <div className="text-center py-6">
+          <p className="text-xs text-muted-foreground mb-2">Pet ID</p>
+          <code className="px-4 py-2 bg-muted rounded-lg font-mono text-sm">{pet.unique_pet_id}</code>
+        </div>
+
+        {/* Footer */}
+        <div className="text-center pt-4 pb-8 border-t">
+          <div className="flex items-center justify-center gap-2 text-muted-foreground">
+            <Heart className="w-4 h-4 text-primary fill-current" />
+            <span className="text-sm">Powered by <strong>PetPaw</strong> Health System</span>
+          </div>
         </div>
       </main>
     </div>
