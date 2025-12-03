@@ -200,6 +200,13 @@ const PetDetail = () => {
                       <p className="text-muted-foreground">{pet.breed || pet.species} • {calculateAge(pet.date_of_birth)}</p>
                     </div>
                     <div className="flex gap-2">
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        onClick={() => navigate(`/pet/${pet.id}/edit`)}
+                      >
+                        <Edit className="w-4 h-4" />
+                      </Button>
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
                           <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
