@@ -10,6 +10,7 @@ import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import AddPet from "./pages/AddPet";
 import PetDetail from "./pages/PetDetail";
+import EditPet from "./pages/EditPet";
 import EmergencyProfile from "./pages/EmergencyProfile";
 import NotFound from "./pages/NotFound";
 
@@ -47,6 +48,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <PetDetail />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/pet/:id/edit"
+              element={
+                <ProtectedRoute>
+                  <EditPet />
                 </ProtectedRoute>
               }
             />
