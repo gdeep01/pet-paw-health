@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -32,21 +32,27 @@ const QuickEditContacts = (props: QuickEditContactsProps) => {
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   
-  const [emergencyName, setEmergencyName] = useState(
-    type === 'emergency' ? (props as QuickEditEmergencyProps).emergencyContactName || '' : ''
-  );
-  const [emergencyPhone, setEmergencyPhone] = useState(
-    type === 'emergency' ? (props as QuickEditEmergencyProps).emergencyContactPhone || '' : ''
-  );
-  const [vetName, setVetName] = useState(
-    type === 'vet' ? (props as QuickEditVetProps).vetName || '' : ''
-  );
-  const [vetPhone, setVetPhone] = useState(
-    type === 'vet' ? (props as QuickEditVetProps).vetPhone || '' : ''
-  );
-  const [vetEmail, setVetEmail] = useState(
-    type === 'vet' ? (props as QuickEditVetProps).vetEmail || '' : ''
-  );
+  const [emergencyName, setEmergencyName] = useState('');
+  const [emergencyPhone, setEmergencyPhone] = useState('');
+  const [vetName, setVetName] = useState('');
+  const [vetPhone, setVetPhone] = useState('');
+  const [vetEmail, setVetEmail] = useState('');
+
+  // Reset form values when dialog opens
+  useEffect(() => {
+    if (open) {
+      if (type === 'emergency') {
+        const p = props as QuickEditEmergencyProps;
+        setEmergencyName(p.emergencyContactName || '');
+        setEmergencyPhone(p.emergencyContactPhone || '');
+      } else {
+        const p = props as QuickEditVetProps;
+        setVetName(p.vetName || '');
+        setVetPhone(p.vetPhone || '');
+        setVetEmail(p.vetEmail || '');
+      }
+    }
+  }, [open, props, type]);
 
   const handleSave = async () => {
     setSaving(true);
@@ -71,7 +77,8 @@ const QuickEditContacts = (props: QuickEditContactsProps) => {
 
       toast({ title: `${type === 'emergency' ? 'Emergency contact' : 'Veterinarian'} updated!` });
       setOpen(false);
-      onUpdate();
+      // Delay onUpdate to ensure dialog closes first
+      setTimeout(() => onUpdate(), 100);
     } catch (error: any) {
       toast({ title: 'Error', description: error.message, variant: 'destructive' });
     } finally {
@@ -82,11 +89,11 @@ const QuickEditContacts = (props: QuickEditContactsProps) => {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="ghost" size="icon" className="h-8 w-8">
+        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={(e) => e.stopPropagation()}>
           <Edit className="w-4 h-4" />
         </Button>
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent onPointerDownOutside={(e) => e.preventDefault()}>
         <DialogHeader>
           <DialogTitle>
             Edit {type === 'emergency' ? 'Emergency Contact' : 'Veterinarian'}
