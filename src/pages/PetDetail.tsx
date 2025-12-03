@@ -16,6 +16,7 @@ import PageContainer from '@/components/layout/PageContainer';
 import LoadingSpinner from '@/components/ui/loading-spinner';
 import QuickEditHealth from '@/components/pets/QuickEditHealth';
 import QuickEditContacts from '@/components/pets/QuickEditContacts';
+import VaccinationList from '@/components/vaccinations/VaccinationList';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -372,6 +373,9 @@ const PetDetail = () => {
               </CardContent>
             </Card>
           </div>
+
+          {/* Vaccination Tracking */}
+          <VaccinationList petId={pet.id} petName={pet.pet_name} />
         </div>
 
         {/* QR Code Sidebar */}

@@ -140,6 +140,53 @@ export type Database = {
         }
         Relationships: []
       }
+      vaccinations: {
+        Row: {
+          created_at: string
+          date_given: string
+          id: string
+          next_due_date: string | null
+          notes: string | null
+          pet_id: string
+          updated_at: string
+          user_id: string
+          vaccine_name: string
+          vet_name: string | null
+        }
+        Insert: {
+          created_at?: string
+          date_given: string
+          id?: string
+          next_due_date?: string | null
+          notes?: string | null
+          pet_id: string
+          updated_at?: string
+          user_id: string
+          vaccine_name: string
+          vet_name?: string | null
+        }
+        Update: {
+          created_at?: string
+          date_given?: string
+          id?: string
+          next_due_date?: string | null
+          notes?: string | null
+          pet_id?: string
+          updated_at?: string
+          user_id?: string
+          vaccine_name?: string
+          vet_name?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vaccinations_pet_id_fkey"
+            columns: ["pet_id"]
+            isOneToOne: false
+            referencedRelation: "pets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
