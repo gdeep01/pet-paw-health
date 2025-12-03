@@ -4,8 +4,9 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { AlertCircle, Heart, Phone, Syringe, Calendar, Droplet, AlertTriangle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { format, differenceInYears, differenceInMonths } from 'date-fns';
+import { differenceInYears, differenceInMonths } from 'date-fns';
 import LoadingSpinner from '@/components/ui/loading-spinner';
+import SEOHead from '@/components/seo/SEOHead';
 
 interface Pet {
   id: string;
@@ -98,17 +99,24 @@ const EmergencyProfile = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-destructive/10 via-background to-destructive/5">
-      {/* Emergency Header */}
-      <div className="bg-destructive text-destructive-foreground py-4 px-4 shadow-lg">
-        <div className="container mx-auto max-w-2xl">
-          <div className="flex items-center justify-center gap-3">
-            <AlertTriangle className="w-6 h-6 animate-pulse" />
-            <h1 className="text-xl font-bold tracking-wide">EMERGENCY PET PROFILE</h1>
-            <AlertTriangle className="w-6 h-6 animate-pulse" />
+    <>
+      <SEOHead 
+        title={`${pet.pet_name} - Emergency Pet Profile | PetPaw`}
+        description={`Emergency health profile for ${pet.pet_name}. View allergies, medical conditions, and emergency contacts.`}
+        noIndex={true}
+      />
+      
+      <div className="min-h-screen bg-gradient-to-br from-destructive/10 via-background to-destructive/5">
+        {/* Emergency Header */}
+        <div className="bg-destructive text-destructive-foreground py-4 px-4 shadow-lg">
+          <div className="container mx-auto max-w-2xl">
+            <div className="flex items-center justify-center gap-3">
+              <AlertTriangle className="w-6 h-6 animate-pulse" />
+              <h1 className="text-xl font-bold tracking-wide">EMERGENCY PET PROFILE</h1>
+              <AlertTriangle className="w-6 h-6 animate-pulse" />
+            </div>
           </div>
         </div>
-      </div>
 
       <main className="container mx-auto px-4 py-8 max-w-2xl">
         {/* Pet Header */}
@@ -248,12 +256,19 @@ const EmergencyProfile = () => {
         {/* Footer */}
         <div className="text-center pt-4 pb-8 border-t">
           <div className="flex items-center justify-center gap-2 text-muted-foreground">
-            <Heart className="w-4 h-4 text-primary fill-current" />
+            <svg viewBox="0 0 24 24" className="w-4 h-4 text-primary" fill="currentColor">
+              <ellipse cx="12" cy="15" rx="5" ry="4.5" />
+              <ellipse cx="6.5" cy="8" rx="2.5" ry="3" />
+              <ellipse cx="17.5" cy="8" rx="2.5" ry="3" />
+              <ellipse cx="8" cy="11.5" rx="2" ry="2.5" />
+              <ellipse cx="16" cy="11.5" rx="2" ry="2.5" />
+            </svg>
             <span className="text-sm">Powered by <strong>PetPaw</strong> Health System</span>
           </div>
         </div>
       </main>
     </div>
+    </>
   );
 };
 
