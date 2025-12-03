@@ -14,6 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
+      notification_preferences: {
+        Row: {
+          created_at: string
+          email_enabled: boolean | null
+          id: string
+          updated_at: string
+          user_id: string
+          whatsapp_enabled: boolean | null
+          whatsapp_number: string | null
+        }
+        Insert: {
+          created_at?: string
+          email_enabled?: boolean | null
+          id?: string
+          updated_at?: string
+          user_id: string
+          whatsapp_enabled?: boolean | null
+          whatsapp_number?: string | null
+        }
+        Update: {
+          created_at?: string
+          email_enabled?: boolean | null
+          id?: string
+          updated_at?: string
+          user_id?: string
+          whatsapp_enabled?: boolean | null
+          whatsapp_number?: string | null
+        }
+        Relationships: []
+      }
       pets: {
         Row: {
           blood_group: string | null
