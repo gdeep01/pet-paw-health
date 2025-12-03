@@ -1,7 +1,8 @@
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
-import { LogOut, Heart, Home, Plus, Settings } from 'lucide-react';
+import { LogOut, Home, Plus } from 'lucide-react';
+import Logo from '@/components/Logo';
 
 const Header = () => {
   const { user, signOut } = useAuth();
@@ -21,17 +22,9 @@ const Header = () => {
         <div className="flex items-center justify-between">
           <button 
             onClick={() => navigate(user ? '/dashboard' : '/')}
-            className="flex items-center gap-3 hover:opacity-80 transition-opacity"
+            className="hover:opacity-80 transition-opacity"
           >
-            <div className="w-10 h-10 bg-gradient-to-br from-primary to-primary-dark rounded-xl flex items-center justify-center shadow-md">
-              <Heart className="w-5 h-5 text-primary-foreground fill-current" />
-            </div>
-            <div className="hidden sm:block">
-              <h1 className="text-xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                PetPaw
-              </h1>
-              <p className="text-xs text-muted-foreground -mt-0.5">Pet Health System</p>
-            </div>
+            <Logo size="sm" />
           </button>
 
           {user && (
