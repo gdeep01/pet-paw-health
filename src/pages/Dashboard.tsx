@@ -9,6 +9,7 @@ import PetCard from '@/components/pets/PetCard';
 import AddPetCard from '@/components/pets/AddPetCard';
 import LoadingSpinner from '@/components/ui/loading-spinner';
 import EmptyState from '@/components/ui/empty-state';
+import NotificationSettings from '@/components/notifications/NotificationSettings';
 import { useNavigate } from 'react-router-dom';
 
 interface Pet {
@@ -62,11 +63,14 @@ const Dashboard = () => {
   return (
     <PageContainer>
       {/* Page Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl md:text-4xl font-bold mb-2">Your Pets</h1>
-        <p className="text-muted-foreground text-lg">
-          Manage health records and emergency profiles for your furry friends.
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+        <div>
+          <h1 className="text-3xl md:text-4xl font-bold mb-2">Your Pets</h1>
+          <p className="text-muted-foreground text-lg">
+            Manage health records and emergency profiles for your furry friends.
+          </p>
+        </div>
+        <NotificationSettings />
       </div>
 
       {/* Stats Overview */}
