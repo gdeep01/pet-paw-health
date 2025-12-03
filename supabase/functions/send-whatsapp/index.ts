@@ -38,7 +38,8 @@ serve(async (req) => {
       ? TWILIO_WHATSAPP_NUMBER 
       : `whatsapp:${TWILIO_WHATSAPP_NUMBER}`;
 
-    console.log(`Sending WhatsApp message to ${formattedTo}`);
+    console.log(`Sending WhatsApp message from ${formattedFrom} to ${formattedTo}`);
+    console.log(`TWILIO_WHATSAPP_NUMBER value: ${TWILIO_WHATSAPP_NUMBER}`);
 
     const twilioUrl = `https://api.twilio.com/2010-04-01/Accounts/${TWILIO_ACCOUNT_SID}/Messages.json`;
     
