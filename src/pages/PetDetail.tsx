@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { QRCodeSVG } from 'qrcode.react';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { 
   QrCode, Phone, AlertCircle, Heart, Calendar, Weight, 
@@ -15,6 +14,8 @@ import {
 import { format, differenceInYears, differenceInMonths } from 'date-fns';
 import PageContainer from '@/components/layout/PageContainer';
 import LoadingSpinner from '@/components/ui/loading-spinner';
+import QuickEditHealth from '@/components/pets/QuickEditHealth';
+import QuickEditContacts from '@/components/pets/QuickEditContacts';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -264,49 +265,54 @@ const PetDetail = () => {
 
           {/* Health Information */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Allergies */}
+          {/* Health Info with Quick Edit */}
             <Card className={`border-border/50 ${pet.known_allergies ? 'border-l-4 border-l-[hsl(var(--warning))]' : ''}`}>
               <CardHeader className="pb-3">
-                <CardTitle className="text-base flex items-center gap-2">
-                  <AlertCircle className="w-4 h-4 text-[hsl(var(--warning))]" />
-                  Known Allergies
-                </CardTitle>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <AlertCircle className="w-4 h-4 text-[hsl(var(--warning))]" />
+                    Health Information
+                  </CardTitle>
+                  <QuickEditHealth
+                    petId={pet.id}
+                    knownAllergies={pet.known_allergies}
+                    chronicConditions={pet.chronic_conditions}
+                    bloodGroup={pet.blood_group}
+                    weightKg={pet.weight_kg}
+                    onUpdate={fetchPet}
+                  />
+                </div>
               </CardHeader>
-              <CardContent>
-                {pet.known_allergies ? (
-                  <p className="text-sm">{pet.known_allergies}</p>
-                ) : (
-                  <p className="text-sm text-muted-foreground">No known allergies recorded</p>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Chronic Conditions */}
-            <Card className="border-border/50">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-base flex items-center gap-2">
-                  <Syringe className="w-4 h-4 text-primary" />
-                  Chronic Conditions
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {pet.chronic_conditions ? (
-                  <p className="text-sm">{pet.chronic_conditions}</p>
-                ) : (
-                  <p className="text-sm text-muted-foreground">No chronic conditions recorded</p>
-                )}
+              <CardContent className="space-y-3">
+                <div>
+                  <p className="text-xs text-muted-foreground">Allergies</p>
+                  <p className="text-sm">{pet.known_allergies || 'None recorded'}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">Chronic Conditions</p>
+                  <p className="text-sm">{pet.chronic_conditions || 'None recorded'}</p>
+                </div>
               </CardContent>
             </Card>
           </div>
 
-          {/* Contact Cards */}
+          {/* Contact Cards with Quick Edit */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Card className="border-border/50">
               <CardHeader className="pb-3">
-                <CardTitle className="text-base flex items-center gap-2">
-                  <Phone className="w-4 h-4 text-destructive" />
-                  Emergency Contact
-                </CardTitle>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <Phone className="w-4 h-4 text-destructive" />
+                    Emergency Contact
+                  </CardTitle>
+                  <QuickEditContacts
+                    petId={pet.id}
+                    type="emergency"
+                    emergencyContactName={pet.emergency_contact_name}
+                    emergencyContactPhone={pet.emergency_contact_phone}
+                    onUpdate={fetchPet}
+                  />
+                </div>
               </CardHeader>
               <CardContent className="space-y-2">
                 {pet.emergency_contact_name || pet.emergency_contact_phone ? (
@@ -328,10 +334,20 @@ const PetDetail = () => {
 
             <Card className="border-border/50">
               <CardHeader className="pb-3">
-                <CardTitle className="text-base flex items-center gap-2">
-                  <Syringe className="w-4 h-4 text-accent" />
-                  Veterinarian
-                </CardTitle>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <Syringe className="w-4 h-4 text-accent" />
+                    Veterinarian
+                  </CardTitle>
+                  <QuickEditContacts
+                    petId={pet.id}
+                    type="vet"
+                    vetName={pet.vet_name}
+                    vetPhone={pet.vet_phone}
+                    vetEmail={pet.vet_email}
+                    onUpdate={fetchPet}
+                  />
+                </div>
               </CardHeader>
               <CardContent className="space-y-2">
                 {pet.vet_name || pet.vet_phone ? (
