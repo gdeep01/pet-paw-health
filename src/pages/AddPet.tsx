@@ -6,12 +6,12 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { Upload, Camera, Loader2, Dog, Cat } from 'lucide-react';
+import { Camera, Loader2, Dog, Cat } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import PageContainer from '@/components/layout/PageContainer';
+import { validatePetForm } from '@/lib/validation';
 
 const AddPet = () => {
   const { user } = useAuth();
@@ -21,6 +21,7 @@ const AddPet = () => {
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [step, setStep] = useState(1);
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   const [formData, setFormData] = useState({
     pet_name: '',
@@ -55,9 +56,38 @@ const AddPet = () => {
     return `PET-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`.toUpperCase();
   };
 
+  const validateCurrentStep = (): boolean => {
+    const validation = validatePetForm(formData);
+    
+    if (step === 1) {
+      const stepErrors: Record<string, string> = {};
+      if (validation.errors.pet_name) stepErrors.pet_name = validation.errors.pet_name;
+      if (validation.errors.species) stepErrors.species = validation.errors.species;
+      if (validation.errors.date_of_birth) stepErrors.date_of_birth = validation.errors.date_of_birth;
+      if (validation.errors.weight_kg) stepErrors.weight_kg = validation.errors.weight_kg;
+      
+      setErrors(stepErrors);
+      return Object.keys(stepErrors).length === 0;
+    }
+    
+    return true;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
+    
+    // Final validation
+    const validation = validatePetForm(formData);
+    if (!validation.success) {
+      setErrors(validation.errors);
+      toast({
+        title: 'Validation Error',
+        description: 'Please check the form for errors.',
+        variant: 'destructive',
+      });
+      return;
+    }
     
     setLoading(true);
 
@@ -83,8 +113,20 @@ const AddPet = () => {
 
       const { error } = await supabase.from('pets').insert({
         user_id: user.id,
-        ...formData,
+        pet_name: formData.pet_name.trim(),
+        species: formData.species,
+        breed: formData.breed?.trim() || null,
+        date_of_birth: formData.date_of_birth,
         weight_kg: formData.weight_kg ? parseFloat(formData.weight_kg) : null,
+        is_indoor: formData.is_indoor,
+        known_allergies: formData.known_allergies?.trim() || null,
+        blood_group: formData.blood_group?.trim() || null,
+        chronic_conditions: formData.chronic_conditions?.trim() || null,
+        vet_name: formData.vet_name?.trim() || null,
+        vet_phone: formData.vet_phone?.trim() || null,
+        vet_email: formData.vet_email?.trim() || null,
+        emergency_contact_name: formData.emergency_contact_name?.trim() || null,
+        emergency_contact_phone: formData.emergency_contact_phone?.trim() || null,
         pet_photo_url: photoUrl,
         unique_pet_id: generateUniquePetId(),
       });
@@ -92,7 +134,7 @@ const AddPet = () => {
       if (error) throw error;
 
       toast({
-        title: 'Pet Added Successfully! 🎉',
+        title: 'Pet Added Successfully!',
         description: `${formData.pet_name}'s health profile has been created.`,
       });
 
@@ -108,12 +150,21 @@ const AddPet = () => {
     }
   };
 
+  const handleNextStep = () => {
+    if (validateCurrentStep()) {
+      setStep(step + 1);
+    }
+  };
+
   const canProceed = () => {
     if (step === 1) {
-      return formData.pet_name && formData.species && formData.date_of_birth;
+      return formData.pet_name.trim() && formData.species && formData.date_of_birth;
     }
     return true;
   };
+
+  // Get today's date for max date validation
+  const today = new Date().toISOString().split('T')[0];
 
   return (
     <PageContainer className="max-w-3xl">
@@ -197,7 +248,10 @@ const AddPet = () => {
                       <button
                         key={option.value}
                         type="button"
-                        onClick={() => setFormData({ ...formData, species: option.value })}
+                        onClick={() => {
+                          setFormData({ ...formData, species: option.value });
+                          setErrors({ ...errors, species: '' });
+                        }}
                         className={`p-4 rounded-xl border-2 transition-all ${
                           formData.species === option.value 
                             ? 'border-primary bg-primary/5' 
@@ -209,6 +263,7 @@ const AddPet = () => {
                       </button>
                     ))}
                   </div>
+                  {errors.species && <p className="text-sm text-destructive">{errors.species}</p>}
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -219,9 +274,13 @@ const AddPet = () => {
                       required
                       placeholder="e.g., Buddy"
                       value={formData.pet_name}
-                      onChange={(e) => setFormData({ ...formData, pet_name: e.target.value })}
-                      className="h-11"
+                      onChange={(e) => {
+                        setFormData({ ...formData, pet_name: e.target.value });
+                        setErrors({ ...errors, pet_name: '' });
+                      }}
+                      className={`h-11 ${errors.pet_name ? 'border-destructive' : ''}`}
                     />
+                    {errors.pet_name && <p className="text-sm text-destructive">{errors.pet_name}</p>}
                   </div>
 
                   <div className="space-y-2">
@@ -241,10 +300,15 @@ const AddPet = () => {
                       id="date_of_birth"
                       type="date"
                       required
+                      max={today}
                       value={formData.date_of_birth}
-                      onChange={(e) => setFormData({ ...formData, date_of_birth: e.target.value })}
-                      className="h-11"
+                      onChange={(e) => {
+                        setFormData({ ...formData, date_of_birth: e.target.value });
+                        setErrors({ ...errors, date_of_birth: '' });
+                      }}
+                      className={`h-11 ${errors.date_of_birth ? 'border-destructive' : ''}`}
                     />
+                    {errors.date_of_birth && <p className="text-sm text-destructive">{errors.date_of_birth}</p>}
                   </div>
 
                   <div className="space-y-2">
@@ -253,11 +317,17 @@ const AddPet = () => {
                       id="weight_kg"
                       type="number"
                       step="0.1"
+                      min="0.1"
+                      max="200"
                       placeholder="e.g., 12.5"
                       value={formData.weight_kg}
-                      onChange={(e) => setFormData({ ...formData, weight_kg: e.target.value })}
-                      className="h-11"
+                      onChange={(e) => {
+                        setFormData({ ...formData, weight_kg: e.target.value });
+                        setErrors({ ...errors, weight_kg: '' });
+                      }}
+                      className={`h-11 ${errors.weight_kg ? 'border-destructive' : ''}`}
                     />
+                    {errors.weight_kg && <p className="text-sm text-destructive">{errors.weight_kg}</p>}
                   </div>
                 </div>
 
@@ -297,6 +367,7 @@ const AddPet = () => {
                     onChange={(e) => setFormData({ ...formData, known_allergies: e.target.value })}
                     placeholder="List any known allergies (e.g., chicken, pollen)..."
                     className="min-h-24"
+                    maxLength={500}
                   />
                 </div>
 
@@ -308,6 +379,7 @@ const AddPet = () => {
                     onChange={(e) => setFormData({ ...formData, chronic_conditions: e.target.value })}
                     placeholder="List any chronic conditions (e.g., diabetes, arthritis)..."
                     className="min-h-24"
+                    maxLength={500}
                   />
                 </div>
               </>
@@ -331,6 +403,7 @@ const AddPet = () => {
                         value={formData.emergency_contact_name}
                         onChange={(e) => setFormData({ ...formData, emergency_contact_name: e.target.value })}
                         className="h-11"
+                        maxLength={100}
                       />
                     </div>
                     <div className="space-y-2">
@@ -342,6 +415,7 @@ const AddPet = () => {
                         value={formData.emergency_contact_phone}
                         onChange={(e) => setFormData({ ...formData, emergency_contact_phone: e.target.value })}
                         className="h-11"
+                        maxLength={20}
                       />
                     </div>
                   </div>
@@ -362,6 +436,7 @@ const AddPet = () => {
                         value={formData.vet_name}
                         onChange={(e) => setFormData({ ...formData, vet_name: e.target.value })}
                         className="h-11"
+                        maxLength={100}
                       />
                     </div>
                     <div className="space-y-2">
@@ -373,6 +448,7 @@ const AddPet = () => {
                         value={formData.vet_phone}
                         onChange={(e) => setFormData({ ...formData, vet_phone: e.target.value })}
                         className="h-11"
+                        maxLength={20}
                       />
                     </div>
                     <div className="space-y-2 md:col-span-2">
@@ -401,7 +477,7 @@ const AddPet = () => {
               {step < 3 ? (
                 <Button 
                   type="button" 
-                  onClick={() => setStep(step + 1)} 
+                  onClick={handleNextStep} 
                   disabled={!canProceed()}
                   className="flex-1"
                 >

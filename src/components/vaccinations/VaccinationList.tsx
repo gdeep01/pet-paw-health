@@ -32,9 +32,10 @@ interface Vaccination {
 interface VaccinationListProps {
   petId: string;
   petName: string;
+  onVaccinationChange?: () => void;
 }
 
-const VaccinationList = ({ petId, petName }: VaccinationListProps) => {
+const VaccinationList = ({ petId, petName, onVaccinationChange }: VaccinationListProps) => {
   const { user } = useAuth();
   const { toast } = useToast();
   const [vaccinations, setVaccinations] = useState<Vaccination[]>([]);
@@ -75,9 +76,15 @@ const VaccinationList = ({ petId, petName }: VaccinationListProps) => {
       
       toast({ title: 'Vaccination record deleted' });
       fetchVaccinations();
+      onVaccinationChange?.();
     } catch (error: any) {
       toast({ title: 'Error', description: error.message, variant: 'destructive' });
     }
+  };
+
+  const handleVaccinationAdded = () => {
+    fetchVaccinations();
+    onVaccinationChange?.();
   };
 
   const getStatus = (nextDueDate: string | null) => {
@@ -187,7 +194,7 @@ const VaccinationList = ({ petId, petName }: VaccinationListProps) => {
         onOpenChange={setDialogOpen}
         petId={petId}
         petName={petName}
-        onSuccess={fetchVaccinations}
+        onSuccess={handleVaccinationAdded}
       />
     </Card>
   );

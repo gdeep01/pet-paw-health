@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { AlertCircle, Heart, Phone, Syringe, Calendar, Droplet, AlertTriangle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { differenceInYears, differenceInMonths } from 'date-fns';
+import { differenceInYears, differenceInMonths, format } from 'date-fns';
 import LoadingSpinner from '@/components/ui/loading-spinner';
 import SEOHead from '@/components/seo/SEOHead';
 
@@ -25,30 +25,52 @@ interface Pet {
   chronic_conditions: string | null;
 }
 
+interface LastVaccination {
+  vaccine_name: string;
+  date_given: string;
+}
+
 const EmergencyProfile = () => {
   const { petId } = useParams();
   const [pet, setPet] = useState<Pet | null>(null);
+  const [lastVaccination, setLastVaccination] = useState<LastVaccination | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 
   useEffect(() => {
     if (petId) {
-      fetchPet();
+      fetchPetData();
     }
   }, [petId]);
 
-  const fetchPet = async () => {
+  const fetchPetData = async () => {
     if (!petId) return;
 
     try {
-      const { data, error } = await supabase
+      // Fetch pet data
+      const { data: petData, error: petError } = await supabase
         .from('pets')
         .select('*')
         .eq('unique_pet_id', petId)
         .single();
 
-      if (error) throw error;
-      setPet(data);
+      if (petError) throw petError;
+      setPet(petData);
+
+      // Fetch last vaccination
+      if (petData?.id) {
+        const { data: vaxData } = await supabase
+          .from('vaccinations')
+          .select('vaccine_name, date_given')
+          .eq('pet_id', petData.id)
+          .order('date_given', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        if (vaxData) {
+          setLastVaccination(vaxData);
+        }
+      }
     } catch (error) {
       setError(true);
     } finally {
@@ -181,6 +203,26 @@ const EmergencyProfile = () => {
                   <p className="text-foreground">{pet.chronic_conditions}</p>
                 </div>
               )}
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Last Vaccination Info */}
+        {lastVaccination && (
+          <Card className="mb-6 border border-border/50">
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center gap-2 text-primary">
+                <Syringe className="w-5 h-5" />
+                LAST VACCINATION
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="p-4 rounded-lg bg-muted/50">
+                <p className="font-semibold text-lg">{lastVaccination.vaccine_name}</p>
+                <p className="text-muted-foreground">
+                  Given on {format(new Date(lastVaccination.date_given), 'MMMM d, yyyy')}
+                </p>
+              </div>
             </CardContent>
           </Card>
         )}
