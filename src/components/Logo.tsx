@@ -44,7 +44,7 @@ const Logo = ({ className, size = 'md', showText = true }: LogoProps) => {
           'font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent',
           sizes[size].text
         )}>
-          PetPaw
+          PetRepo
         </span>
       )}
     </div>

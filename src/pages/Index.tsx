@@ -52,7 +52,7 @@ const Index = () => {
   return (
     <>
       <SEOHead 
-        title="PetPaw - Intelligent Pet Health Management System"
+        title="PetRepo - Intelligent Pet Health Management System"
         description="Keep your pets healthy with comprehensive health tracking, emergency QR codes, vaccination reminders, and smart health management for dogs and cats."
         keywords="pet health, dog health tracker, cat health management, emergency pet QR code, pet vaccination tracker, pet medical records, pet care app"
       />
@@ -138,9 +138,9 @@ const Index = () => {
                 <h2 id="features-heading" className="text-3xl md:text-4xl font-bold mb-4">
                   Everything You Need for Pet Health
                 </h2>
-                <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-                  From daily health tracking to emergency preparedness, PetPaw has you covered.
-                </p>
+              <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+                From daily health tracking to emergency preparedness, PetRepo has you covered.
+              </p>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
@@ -213,7 +213,7 @@ const Index = () => {
                     Ready to Protect Your Pets?
                   </h2>
                   <p className="text-lg mb-8 opacity-90 max-w-xl mx-auto">
-                    Join thousands of pet owners who trust PetPaw for their pet's health management.
+                    Join thousands of pet owners who trust PetRepo for their pet's health management.
                   </p>
                   <Button 
                     size="lg" 
@@ -236,7 +236,7 @@ const Index = () => {
             <div className="flex flex-col md:flex-row items-center justify-between gap-4">
               <Logo size="sm" />
               <p className="text-sm text-muted-foreground">
-                © {new Date().getFullYear()} PetPaw. All rights reserved.
+                © {new Date().getFullYear()} PetRepo. All rights reserved.
               </p>
             </div>
           </div>

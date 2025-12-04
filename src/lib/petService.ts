@@ -6,7 +6,7 @@ import { supabase } from '@/integrations/supabase/client';
  */
 export async function deletePetWithDependents(petId: string, userId: string): Promise<{ error: Error | null }> {
   try {
-    // First, delete all vaccinations for this pet
+    // Delete all vaccinations for this pet
     const { error: vaccinationError } = await supabase
       .from('vaccinations')
       .delete()
@@ -15,7 +15,28 @@ export async function deletePetWithDependents(petId: string, userId: string): Pr
 
     if (vaccinationError) {
       console.error('Error deleting vaccinations:', vaccinationError);
-      // Continue anyway - pet deletion will fail if there's a FK constraint
+    }
+
+    // Delete all vaccine schedules for this pet
+    const { error: scheduleError } = await supabase
+      .from('pet_vaccine_schedules')
+      .delete()
+      .eq('pet_id', petId)
+      .eq('user_id', userId);
+
+    if (scheduleError) {
+      console.error('Error deleting vaccine schedules:', scheduleError);
+    }
+
+    // Delete all health timeline events for this pet
+    const { error: timelineError } = await supabase
+      .from('health_timeline')
+      .delete()
+      .eq('pet_id', petId)
+      .eq('user_id', userId);
+
+    if (timelineError) {
+      console.error('Error deleting timeline events:', timelineError);
     }
 
     // Then delete the pet
@@ -34,7 +55,6 @@ export async function deletePetWithDependents(petId: string, userId: string): Pr
     return { error: error as Error };
   }
 }
-
 /**
  * Fetch pet with its vaccinations for risk calculation
  */
