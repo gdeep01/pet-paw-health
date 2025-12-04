@@ -14,6 +14,56 @@ export type Database = {
   }
   public: {
     Tables: {
+      health_timeline: {
+        Row: {
+          created_at: string
+          description: string | null
+          event_date: string
+          event_type: Database["public"]["Enums"]["timeline_event_type"]
+          id: string
+          metadata: Json | null
+          pet_id: string
+          severity: string | null
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          event_date: string
+          event_type: Database["public"]["Enums"]["timeline_event_type"]
+          id?: string
+          metadata?: Json | null
+          pet_id: string
+          severity?: string | null
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          event_date?: string
+          event_type?: Database["public"]["Enums"]["timeline_event_type"]
+          id?: string
+          metadata?: Json | null
+          pet_id?: string
+          severity?: string | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "health_timeline_pet_id_fkey"
+            columns: ["pet_id"]
+            isOneToOne: false
+            referencedRelation: "pets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notification_preferences: {
         Row: {
           created_at: string
@@ -43,6 +93,63 @@ export type Database = {
           whatsapp_number?: string | null
         }
         Relationships: []
+      }
+      pet_vaccine_schedules: {
+        Row: {
+          completed_date: string | null
+          created_at: string
+          due_date: string
+          id: string
+          notes: string | null
+          pet_id: string
+          protocol_id: string | null
+          status: string
+          updated_at: string
+          user_id: string
+          vaccine_name: string
+        }
+        Insert: {
+          completed_date?: string | null
+          created_at?: string
+          due_date: string
+          id?: string
+          notes?: string | null
+          pet_id: string
+          protocol_id?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+          vaccine_name: string
+        }
+        Update: {
+          completed_date?: string | null
+          created_at?: string
+          due_date?: string
+          id?: string
+          notes?: string | null
+          pet_id?: string
+          protocol_id?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+          vaccine_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pet_vaccine_schedules_pet_id_fkey"
+            columns: ["pet_id"]
+            isOneToOne: false
+            referencedRelation: "pets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pet_vaccine_schedules_protocol_id_fkey"
+            columns: ["protocol_id"]
+            isOneToOne: false
+            referencedRelation: "vaccine_protocols"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       pets: {
         Row: {
@@ -187,6 +294,48 @@ export type Database = {
           },
         ]
       }
+      vaccine_protocols: {
+        Row: {
+          booster_interval_months: number | null
+          created_at: string
+          description: string | null
+          dose_number: number
+          id: string
+          interval_weeks: number | null
+          is_core: boolean
+          max_age_weeks: number | null
+          min_age_weeks: number
+          species: string
+          vaccine_name: string
+        }
+        Insert: {
+          booster_interval_months?: number | null
+          created_at?: string
+          description?: string | null
+          dose_number?: number
+          id?: string
+          interval_weeks?: number | null
+          is_core?: boolean
+          max_age_weeks?: number | null
+          min_age_weeks: number
+          species: string
+          vaccine_name: string
+        }
+        Update: {
+          booster_interval_months?: number | null
+          created_at?: string
+          description?: string | null
+          dose_number?: number
+          id?: string
+          interval_weeks?: number | null
+          is_core?: boolean
+          max_age_weeks?: number | null
+          min_age_weeks?: number
+          species?: string
+          vaccine_name?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -195,7 +344,13 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      timeline_event_type:
+        | "vaccination"
+        | "vet_visit"
+        | "symptom"
+        | "note"
+        | "weight_update"
+        | "medication"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -322,6 +477,15 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      timeline_event_type: [
+        "vaccination",
+        "vet_visit",
+        "symptom",
+        "note",
+        "weight_update",
+        "medication",
+      ],
+    },
   },
 } as const

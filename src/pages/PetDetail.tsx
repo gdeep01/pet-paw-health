@@ -18,6 +18,8 @@ import LoadingSpinner from '@/components/ui/loading-spinner';
 import QuickEditHealth from '@/components/pets/QuickEditHealth';
 import QuickEditContacts from '@/components/pets/QuickEditContacts';
 import VaccinationList from '@/components/vaccinations/VaccinationList';
+import HealthTimeline from '@/components/timeline/HealthTimeline';
+import VaccineSchedule from '@/components/vaccines/VaccineSchedule';
 import { deletePetWithDependents, fetchPetWithVaccinations } from '@/lib/petService';
 import { calculateHealthRisk, getRiskLevelStyle, type HealthRiskResult } from '@/lib/healthRisk';
 import {
@@ -428,8 +430,20 @@ const PetDetail = () => {
             </Card>
           </div>
 
-          {/* Vaccination Tracking */}
+          {/* Vaccine Schedule (Auto-generated based on species/age) */}
+          <VaccineSchedule 
+            petId={pet.id} 
+            userId={user!.id} 
+            species={pet.species}
+            dateOfBirth={pet.date_of_birth}
+            onScheduleChange={fetchPetData}
+          />
+
+          {/* Vaccination Tracking (Manual records) */}
           <VaccinationList petId={pet.id} petName={pet.pet_name} onVaccinationChange={fetchPetData} />
+
+          {/* Health Timeline */}
+          <HealthTimeline petId={pet.id} userId={user!.id} onEventChange={fetchPetData} />
         </div>
 
         {/* QR Code Sidebar */}
