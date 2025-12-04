@@ -9,7 +9,8 @@ import { QRCodeSVG } from 'qrcode.react';
 import { useToast } from '@/hooks/use-toast';
 import { 
   QrCode, Phone, AlertCircle, Heart, Calendar, Weight, 
-  Download, ExternalLink, Syringe, Copy, Check, Edit, Trash2
+  Download, ExternalLink, Syringe, Copy, Check, Edit, Trash2,
+  AlertTriangle, ShieldAlert
 } from 'lucide-react';
 import { format, differenceInYears, differenceInMonths } from 'date-fns';
 import PageContainer from '@/components/layout/PageContainer';
@@ -17,6 +18,8 @@ import LoadingSpinner from '@/components/ui/loading-spinner';
 import QuickEditHealth from '@/components/pets/QuickEditHealth';
 import QuickEditContacts from '@/components/pets/QuickEditContacts';
 import VaccinationList from '@/components/vaccinations/VaccinationList';
+import { deletePetWithDependents, fetchPetWithVaccinations } from '@/lib/petService';
+import { calculateHealthRisk, getRiskLevelStyle, type HealthRiskResult } from '@/lib/healthRisk';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -49,39 +52,60 @@ interface Pet {
   chronic_conditions: string | null;
 }
 
+interface Vaccination {
+  id: string;
+  vaccine_name: string;
+  date_given: string;
+  next_due_date: string | null;
+  vet_name: string | null;
+  notes: string | null;
+}
+
 const PetDetail = () => {
   const { id } = useParams();
   const { user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [pet, setPet] = useState<Pet | null>(null);
+  const [vaccinations, setVaccinations] = useState<Vaccination[]>([]);
+  const [healthRisk, setHealthRisk] = useState<HealthRiskResult | null>(null);
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
   const qrRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (user && id) {
-      fetchPet();
+      fetchPetData();
     }
   }, [id, user]);
 
-  const fetchPet = async () => {
+  const fetchPetData = async () => {
     if (!user || !id) return;
 
     try {
-      const { data, error } = await supabase
-        .from('pets')
-        .select('*')
-        .eq('id', id)
-        .eq('user_id', user.id)
-        .single();
+      const { pet: petData, petError, vaccinations: vaxData } = await fetchPetWithVaccinations(id, user.id);
 
-      if (error) throw error;
-      setPet(data);
+      if (petError) throw petError;
+      if (!petData) {
+        toast({
+          title: 'Error',
+          description: 'Pet not found or access denied.',
+          variant: 'destructive',
+        });
+        navigate('/dashboard');
+        return;
+      }
+
+      setPet(petData);
+      setVaccinations(vaxData);
+
+      // Calculate health risk
+      const risk = calculateHealthRisk(petData, vaxData);
+      setHealthRisk(risk);
     } catch (error: any) {
       toast({
         title: 'Error',
-        description: 'Pet not found or access denied.',
+        description: error.message || 'Pet not found or access denied.',
         variant: 'destructive',
       });
       navigate('/dashboard');
@@ -91,15 +115,15 @@ const PetDetail = () => {
   };
 
   const deletePet = async () => {
-    if (!pet) return;
+    if (!pet || !user) return;
     
     try {
-      const { error } = await supabase.from('pets').delete().eq('id', pet.id);
+      const { error } = await deletePetWithDependents(pet.id, user.id);
       if (error) throw error;
       
       toast({
         title: 'Pet Deleted',
-        description: `${pet.pet_name}'s profile has been removed.`,
+        description: `${pet.pet_name}'s profile and all associated records have been removed.`,
       });
       navigate('/dashboard');
     } catch (error: any) {
@@ -172,6 +196,7 @@ const PetDetail = () => {
   if (!pet) return null;
 
   const emergencyUrl = `${window.location.origin}/emergency/${pet.unique_pet_id}`;
+  const riskStyle = healthRisk ? getRiskLevelStyle(healthRisk.level) : null;
 
   return (
     <PageContainer className="max-w-6xl">
@@ -219,7 +244,7 @@ const PetDetail = () => {
                           <AlertDialogHeader>
                             <AlertDialogTitle>Delete {pet.pet_name}?</AlertDialogTitle>
                             <AlertDialogDescription>
-                              This will permanently delete {pet.pet_name}'s health profile and all associated data. This action cannot be undone.
+                              This will permanently delete {pet.pet_name}'s health profile, vaccination records, and all associated data. This action cannot be undone.
                             </AlertDialogDescription>
                           </AlertDialogHeader>
                           <AlertDialogFooter>
@@ -233,15 +258,44 @@ const PetDetail = () => {
                     </div>
                   </div>
                   <div className="flex flex-wrap gap-2 mt-3">
-                    <Badge className="bg-[hsl(var(--risk-low))] text-white">
-                      <Heart className="w-3 h-3 mr-1 fill-current" />
-                      Healthy
-                    </Badge>
+                    {healthRisk && riskStyle && (
+                      <Badge className={`${riskStyle.bgClassName} text-white`}>
+                        {healthRisk.level === 'low' ? (
+                          <Heart className="w-3 h-3 mr-1 fill-current" />
+                        ) : healthRisk.level === 'medium' ? (
+                          <AlertCircle className="w-3 h-3 mr-1" />
+                        ) : (
+                          <ShieldAlert className="w-3 h-3 mr-1" />
+                        )}
+                        {riskStyle.label}
+                      </Badge>
+                    )}
                     <Badge variant="secondary">{pet.is_indoor ? 'Indoor' : 'Outdoor'}</Badge>
                     {pet.blood_group && <Badge variant="outline">Blood: {pet.blood_group}</Badge>}
                   </div>
                 </div>
               </div>
+
+              {/* Health Risk Factors Alert */}
+              {healthRisk && healthRisk.factors.length > 0 && healthRisk.level !== 'low' && (
+                <div className={`mt-4 p-3 rounded-lg border ${
+                  healthRisk.level === 'high' 
+                    ? 'bg-destructive/10 border-destructive/30' 
+                    : 'bg-[hsl(var(--warning))]/10 border-[hsl(var(--warning))]/30'
+                }`}>
+                  <p className={`text-sm font-medium mb-2 flex items-center gap-2 ${
+                    healthRisk.level === 'high' ? 'text-destructive' : 'text-[hsl(var(--warning))]'
+                  }`}>
+                    <AlertTriangle className="w-4 h-4" />
+                    Health Risk Factors
+                  </p>
+                  <ul className="text-xs space-y-1 text-muted-foreground">
+                    {healthRisk.factors.map((factor, idx) => (
+                      <li key={idx}>• {factor}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
 
               {/* Quick Stats */}
               <div className="grid grid-cols-3 gap-4 mt-6 pt-6 border-t">
@@ -280,7 +334,7 @@ const PetDetail = () => {
                     chronicConditions={pet.chronic_conditions}
                     bloodGroup={pet.blood_group}
                     weightKg={pet.weight_kg}
-                    onUpdate={fetchPet}
+                    onUpdate={fetchPetData}
                   />
                 </div>
               </CardHeader>
@@ -311,7 +365,7 @@ const PetDetail = () => {
                     type="emergency"
                     emergencyContactName={pet.emergency_contact_name}
                     emergencyContactPhone={pet.emergency_contact_phone}
-                    onUpdate={fetchPet}
+                    onUpdate={fetchPetData}
                   />
                 </div>
               </CardHeader>
@@ -346,7 +400,7 @@ const PetDetail = () => {
                     vetName={pet.vet_name}
                     vetPhone={pet.vet_phone}
                     vetEmail={pet.vet_email}
-                    onUpdate={fetchPet}
+                    onUpdate={fetchPetData}
                   />
                 </div>
               </CardHeader>
@@ -375,7 +429,7 @@ const PetDetail = () => {
           </div>
 
           {/* Vaccination Tracking */}
-          <VaccinationList petId={pet.id} petName={pet.pet_name} />
+          <VaccinationList petId={pet.id} petName={pet.pet_name} onVaccinationChange={fetchPetData} />
         </div>
 
         {/* QR Code Sidebar */}
