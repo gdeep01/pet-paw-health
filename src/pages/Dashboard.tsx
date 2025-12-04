@@ -89,8 +89,8 @@ const Dashboard = () => {
             <p className="text-2xl font-bold">{pets.filter(p => p.species.toLowerCase() === 'cat').length}</p>
           </div>
           <div className="bg-card rounded-xl p-4 border border-border/50">
-            <p className="text-sm text-muted-foreground">Health Status</p>
-            <p className="text-2xl font-bold text-[hsl(var(--risk-low))]">Good</p>
+            <p className="text-sm text-muted-foreground">Indoor Pets</p>
+            <p className="text-2xl font-bold">{pets.filter(p => p.is_indoor).length}</p>
           </div>
         </div>
       )}

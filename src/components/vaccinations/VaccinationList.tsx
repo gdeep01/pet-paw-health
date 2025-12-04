@@ -43,8 +43,10 @@ const VaccinationList = ({ petId, petName, onVaccinationChange }: VaccinationLis
   const [dialogOpen, setDialogOpen] = useState(false);
 
   useEffect(() => {
-    fetchVaccinations();
-  }, [petId]);
+    if (user) {
+      fetchVaccinations();
+    }
+  }, [petId, user]);
 
   const fetchVaccinations = async () => {
     if (!user) return;
