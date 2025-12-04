@@ -123,7 +123,7 @@ const EmergencyProfile = () => {
   return (
     <>
       <SEOHead 
-        title={`${pet.pet_name} - Emergency Pet Profile | PetPaw`}
+        title={`${pet.pet_name} - Emergency Pet Profile | PetRepo`}
         description={`Emergency health profile for ${pet.pet_name}. View allergies, medical conditions, and emergency contacts.`}
         noIndex={true}
       />
@@ -305,7 +305,7 @@ const EmergencyProfile = () => {
               <ellipse cx="8" cy="11.5" rx="2" ry="2.5" />
               <ellipse cx="16" cy="11.5" rx="2" ry="2.5" />
             </svg>
-            <span className="text-sm">Powered by <strong>PetPaw</strong> Health System</span>
+            <span className="text-sm">Powered by <strong>PetRepo</strong> Health System</span>
           </div>
         </div>
       </main>

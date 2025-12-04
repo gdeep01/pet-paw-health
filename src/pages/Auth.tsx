@@ -75,7 +75,7 @@ const Auth = () => {
         } else {
           toast({
             title: 'Account Created!',
-            description: 'Welcome to PetPaw.',
+            description: 'Welcome to PetRepo.',
           });
           navigate('/dashboard');
         }
@@ -101,8 +101,8 @@ const Auth = () => {
   return (
     <>
       <SEOHead 
-        title={isLogin ? 'Sign In - PetPaw' : 'Create Account - PetPaw'}
-        description="Sign in to PetPaw to manage your pet's health records, track vaccinations, and access emergency QR codes."
+        title={isLogin ? 'Sign In - PetRepo' : 'Create Account - PetRepo'}
+        description="Sign in to PetRepo to manage your pet's health records, track vaccinations, and access emergency QR codes."
       />
       
       <div className="min-h-screen flex">
@@ -123,7 +123,7 @@ const Auth = () => {
                 <ellipse cx="16" cy="11.5" rx="2" ry="2.5" />
               </svg>
             </div>
-            <h1 className="text-4xl font-bold mb-4">PetPaw</h1>
+            <h1 className="text-4xl font-bold mb-4">PetRepo</h1>
             <p className="text-xl opacity-90 mb-10">Intelligent Pet Health Management</p>
             
             <div className="space-y-4 text-left">
@@ -270,7 +270,7 @@ const Auth = () => {
                   </div>
                   <div className="relative flex justify-center text-sm">
                     <span className="bg-card px-4 text-muted-foreground">
-                      {isLogin ? 'New to PetPaw?' : 'Already have an account?'}
+                      {isLogin ? 'New to PetRepo?' : 'Already have an account?'}
                     </span>
                   </div>
                 </div>

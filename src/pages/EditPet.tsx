@@ -12,6 +12,7 @@ import { Camera, Loader2, Dog, Cat, ArrowLeft } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import PageContainer from '@/components/layout/PageContainer';
 import LoadingSpinner from '@/components/ui/loading-spinner';
+import { validatePetForm } from '@/lib/validation';
 
 const EditPet = () => {
   const { id } = useParams();
@@ -23,6 +24,7 @@ const EditPet = () => {
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [step, setStep] = useState(1);
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   const [formData, setFormData] = useState({
     pet_name: '',
@@ -116,6 +118,18 @@ const EditPet = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user || !id) return;
+    
+    // Validate form
+    const validation = validatePetForm(formData);
+    if (!validation.success) {
+      setErrors(validation.errors);
+      toast({
+        title: 'Validation Error',
+        description: 'Please check the form for errors.',
+        variant: 'destructive',
+      });
+      return;
+    }
     
     setLoading(true);
 
@@ -299,9 +313,13 @@ const EditPet = () => {
                       required
                       placeholder="e.g., Buddy"
                       value={formData.pet_name}
-                      onChange={(e) => setFormData({ ...formData, pet_name: e.target.value })}
-                      className="h-11"
+                      onChange={(e) => {
+                        setFormData({ ...formData, pet_name: e.target.value });
+                        setErrors({ ...errors, pet_name: '' });
+                      }}
+                      className={`h-11 ${errors.pet_name ? 'border-destructive' : ''}`}
                     />
+                    {errors.pet_name && <p className="text-sm text-destructive">{errors.pet_name}</p>}
                   </div>
 
                   <div className="space-y-2">
@@ -321,10 +339,15 @@ const EditPet = () => {
                       id="date_of_birth"
                       type="date"
                       required
+                      max={new Date().toISOString().split('T')[0]}
                       value={formData.date_of_birth}
-                      onChange={(e) => setFormData({ ...formData, date_of_birth: e.target.value })}
-                      className="h-11"
+                      onChange={(e) => {
+                        setFormData({ ...formData, date_of_birth: e.target.value });
+                        setErrors({ ...errors, date_of_birth: '' });
+                      }}
+                      className={`h-11 ${errors.date_of_birth ? 'border-destructive' : ''}`}
                     />
+                    {errors.date_of_birth && <p className="text-sm text-destructive">{errors.date_of_birth}</p>}
                   </div>
 
                   <div className="space-y-2">
@@ -333,11 +356,17 @@ const EditPet = () => {
                       id="weight_kg"
                       type="number"
                       step="0.1"
+                      min="0.1"
+                      max="200"
                       placeholder="e.g., 12.5"
                       value={formData.weight_kg}
-                      onChange={(e) => setFormData({ ...formData, weight_kg: e.target.value })}
-                      className="h-11"
+                      onChange={(e) => {
+                        setFormData({ ...formData, weight_kg: e.target.value });
+                        setErrors({ ...errors, weight_kg: '' });
+                      }}
+                      className={`h-11 ${errors.weight_kg ? 'border-destructive' : ''}`}
                     />
+                    {errors.weight_kg && <p className="text-sm text-destructive">{errors.weight_kg}</p>}
                   </div>
                 </div>
 
